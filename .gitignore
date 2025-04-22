@@ -2,5 +2,5 @@
 .idea
 # Ignore GitHub Configs files
 .git
-Ignore Build Product
+# Ignore Build Product
 ./bin/
