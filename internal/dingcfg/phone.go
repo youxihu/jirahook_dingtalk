@@ -8,8 +8,8 @@ import (
 
 // ParsePhone 解析 secret.yaml 文件并返回一个 map[string]string
 func ParsePhone() (map[string]string, error) {
-	filePath := "/home/youxihu/secret/phonenumber/secret.yaml"
-	//filePath := "/app-acc/phonenumber/secret.yaml"
+
+	filePath := "/app-acc/phonenumber/secret.yaml"
 
 	// 读取文件内容
 	data, err := os.ReadFile(filePath)

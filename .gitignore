@@ -1,0 +1,6 @@
+# Ignore JetBrains IDE files
+.idea
+# Ignore GitHub Configs files
+.git
+Ignore Build Product
+./bin/

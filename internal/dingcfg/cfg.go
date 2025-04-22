@@ -14,8 +14,7 @@ type Config struct {
 
 // LoadConfig 从指定路径加载 YAML 配置文件
 func ParseConfig() (*Config, error) {
-	filePath := "/home/youxihu/secret/dingtalk/secret.yaml"
-	//filePath := "/app-acc/dingtalk/secret.yaml"
+	filePath := "/app-acc/dingtalk/secret.yaml"
 
 	data, err := os.ReadFile(filePath)
 	if err != nil {
