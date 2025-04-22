@@ -91,6 +91,9 @@ func handleIssueCreated(payload interface{}) error {
 - **操作人**: %s
 - **JIRA对应摘要地址**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 ---
+<details>
+<summary>展开查看并确认</summary>
+
 ###### 备注:
 <small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
 
@@ -99,6 +102,7 @@ func handleIssueCreated(payload interface{}) error {
 
 @%s
 @%s
+</details>
 `,
 			fields.Type.Name,
 			pl.Issue.Key,
@@ -135,6 +139,10 @@ func handleIssueDeleted(payload interface{}) error {
 - **摘要名称**: ~~%s~~
 - **操作人**: %s
 ---
+<details>
+<summary>展开查看并确认
+</summary>
+
 ###### 备注:
 <small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
 
@@ -143,6 +151,7 @@ func handleIssueDeleted(payload interface{}) error {
 
 @%s
 @%s
+</details>
 `,
 		fields.Type.Name,
 		pl.Issue.Key,
@@ -194,6 +203,9 @@ func handleReporterUpdate(pl pkg.IssueUpdatedPayload) error {
 - **操作人**: %s
 - **JIRA对应摘要地址**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 ---
+<details>
+<summary>展开查看并确认</summary>
+
 ###### 备注:
 <small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
 
@@ -202,6 +214,7 @@ func handleReporterUpdate(pl pkg.IssueUpdatedPayload) error {
 
 @%s
 @%s
+</details>
 `,
 			pl.Issue.Key,
 			fields.Summary,
@@ -251,6 +264,9 @@ func handleAssigneeUpdate(pl pkg.IssueAssignedPayload) error {
 - **操作人**: %s
 - **JIRA对应摘要地址**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 ---
+<details>
+<summary>展开查看并确认</summary>
+
 ###### 备注:
 <small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
 
@@ -259,6 +275,7 @@ func handleAssigneeUpdate(pl pkg.IssueAssignedPayload) error {
 
 @%s
 @%s
+</details>
 `,
 			pl.Issue.Key,
 			fields.Summary,
@@ -301,6 +318,9 @@ func handleStatusUpdate(pl pkg.IssueGenericPayload) error {
 - **操作人**: %s
 - **JIRA对应摘要地址**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 ---
+<details>
+<summary>展开查看并确认</summary>
+
 ###### 备注:
 <small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
 
@@ -309,6 +329,7 @@ func handleStatusUpdate(pl pkg.IssueGenericPayload) error {
 
 @%s
 @%s
+</details>
 `,
 			pl.Issue.Key,
 			fields.Summary,
