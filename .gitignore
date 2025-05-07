@@ -3,4 +3,4 @@
 # Ignore GitHub Configs files
 .git
 # Ignore Build Product
-./bin/
+bin/
