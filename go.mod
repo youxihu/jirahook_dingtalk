@@ -4,7 +4,6 @@ go 1.24.0
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	github.com/trifonovmixail/jira-hooks v0.1.0
 )
 
 require (
