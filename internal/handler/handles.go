@@ -86,31 +86,19 @@ func handleIssueCreated(payload interface{}) error {
 
 		content := fmt.Sprintf(`
 ### **事件通知: %s %s创建**
-- **摘要名称**: %s
+- **摘要名称**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 - **经办人**: → **%s**
 - **操作人**: %s
-- **JIRA对应摘要地址**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 ---
-<details>
-<summary>展开查看并确认</summary>
-
-###### 备注:
-<small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
-
-###### 提醒:
-<small>请相关责任人及时确认。如有异议，请联系运维团队。</small>
-
 @%s
 @%s
-</details>
 `,
 			fields.Type.Name,
 			pl.Issue.Key,
 			fields.Summary,
+			pl.Issue.Key,
 			item.ToString,
 			pl.User.DisplayName,
-			fields.Summary,
-			pl.Issue.Key,
 			assigneeNumber,
 			reporterNumber)
 
@@ -139,19 +127,8 @@ func handleIssueDeleted(payload interface{}) error {
 - **摘要名称**: ~~%s~~
 - **操作人**: %s
 ---
-<details>
-<summary>展开查看并确认
-</summary>
-
-###### 备注:
-<small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
-
-###### 提醒:
-<small>请相关责任人及时确认。如有异议，请联系运维团队。</small>
-
 @%s
 @%s
-</details>
 `,
 		fields.Type.Name,
 		pl.Issue.Key,
@@ -197,33 +174,21 @@ func handleReporterUpdate(pl pkg.IssueUpdatedPayload) error {
 
 		content := fmt.Sprintf(`
 ### **事件通知: %s 报告人变更**
-- **摘要名称**: %s
+- **摘要名称**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 - **状态**: %s
 - **报告人**: ~~%s~~ → **%s**
 - **操作人**: %s
-- **JIRA对应摘要地址**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 ---
-<details>
-<summary>展开查看并确认</summary>
-
-###### 备注:
-<small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
-
-###### 提醒:
-<small>请相关责任人及时确认。如有异议，请联系运维团队。</small>
-
 @%s
 @%s
-</details>
 `,
 			pl.Issue.Key,
 			fields.Summary,
+			pl.Issue.Key,
 			fields.Status.Name,
 			item.FromString,
 			item.ToString,
 			pl.User.DisplayName,
-			fields.Summary,
-			pl.Issue.Key,
 			assigneeNumber,
 			reporterNumber)
 
@@ -258,32 +223,20 @@ func handleAssigneeUpdate(pl pkg.IssueAssignedPayload) error {
 
 		content := fmt.Sprintf(`
 ### **事件通知: %s 经办人变更**
-- **摘要名称**: %s
+- **摘要名称**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 - **状态**: %s
 - **经办人**: %s
 - **操作人**: %s
-- **JIRA对应摘要地址**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 ---
-<details>
-<summary>展开查看并确认</summary>
-
-###### 备注:
-<small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
-
-###### 提醒:
-<small>请相关责任人及时确认。如有异议，请联系运维团队。</small>
-
 @%s
 @%s
-</details>
 `,
 			pl.Issue.Key,
 			fields.Summary,
+			pl.Issue.Key,
 			fields.Status.Name,
 			assigneeChange,
 			pl.User.DisplayName,
-			fields.Summary,
-			pl.Issue.Key,
 			assigneeNumber,
 			reporterNumber)
 
@@ -313,31 +266,20 @@ func handleStatusUpdate(pl pkg.IssueGenericPayload) error {
 
 		content := fmt.Sprintf(`
 ### **事件通知: %s 状态变更**
-- **摘要名称**: %s
+- **摘要名称**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 - **状态**: ~~%s~~ → **%s**
 - **操作人**: %s
-- **JIRA对应摘要地址**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
 ---
-<details>
-<summary>展开查看并确认</summary>
-
-###### 备注:
-<small>本通知可作为正式审计记录，由自动化运维系统发送。</small>
-
-###### 提醒:
-<small>请相关责任人及时确认。如有异议，请联系运维团队。</small>
-
 @%s
 @%s
-</details>
 `,
 			pl.Issue.Key,
 			fields.Summary,
+			pl.Issue.Key,
 			item.FromString,
 			item.ToString,
 			pl.User.DisplayName,
-			fields.Summary,
-			pl.Issue.Key,
+
 			assigneeNumber,
 			reporterNumber)
 
