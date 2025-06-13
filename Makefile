@@ -1,6 +1,13 @@
 version := $(shell cat VERSION)
 
 .PHONY: build docker docker_run docker_push
+#run
+run:
+	go run cmd/jira_hook/main.go
+
+#test
+test:
+	cd internal/handler && go test -v
 # build
 build:
 	rm -rf ./bin
@@ -14,10 +21,10 @@ docker_run:
 	docker run -di \
             --name jira_hook \
             -p 4165:4165 \
-            -v /home/youxihu/secret/dingtalk/secret.yaml:/app-acc/dingtalk/secret.yaml \
-            -v /home/youxihu/secret/phonenumber/secret.yaml:/app-acc/phonenumber/secret.yaml \
+            -v /home/youxihu/secret/jira_hook/dingcfg.yaml:/app-acc/configs/dingcfg.yaml \
+            -v /home/youxihu/secret/jira_hook/phonenumb.yaml:/app-acc/configs/phonenumb.yaml \
+            -v /home/youxihu/secret/jira_hook/redis.yaml:/app-acc/configs/redis.yaml \
             192.168.2.254:54800/tools/jira-hook:$(version)
-
 
 docker_push:
 	docker push 192.168.2.254:54800/tools/jira-hook:$(version)

@@ -1,36 +1,20 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
 	"log"
+	"whenchangesth/internal/conf"
 
 	"github.com/youxihu/dingtalk/dingtalk"
-	"whenchangesth/internal/dingcfg"
-	"whenchangesth/pkg"
 )
 
 const (
 	Title = "JIRA事件通知"
 )
 
-var (
-	cfg *dingcfg.Config
-	err error
-)
-
-// 初始化函数，在程序启动时解析配置
-func init() {
-	// 解析钉钉配置
-	cfg, err = dingcfg.ParseConfig()
-	if err != nil {
-		log.Fatal("DingTalk配置解析失败:", err)
-	}
-}
-
 // getPhoneNumberWithFallback 获取电话号码，如果失败则返回空字符串
 func getPhoneNumberWithFallback(displayName string) string {
-	phoneNumber, err := dingcfg.GetPhoneNumber(displayName)
+	phoneNumber, err := conf.GetPhoneNumber(displayName)
 	if err != nil {
 		log.Printf("Error getting phone number for %s: %v", displayName, err)
 		return ""
@@ -52,7 +36,7 @@ func buildAtMobiles(assignee, reporter string) []string {
 
 // sendDingTalkNotification 发送钉钉通知
 func sendDingTalkNotification(content string, atMobiles []string) error {
-	return dingtalk.SendDingDingNotification(cfg.Token, cfg.Secret, Title, content, atMobiles, false)
+	return dingtalk.SendDingDingNotification(dingCfg.Token, dingCfg.Secret, Title, content, atMobiles, false)
 }
 
 // handleError 统一错误处理
@@ -61,233 +45,5 @@ func handleError(err error, message string) error {
 		log.Printf("%s: %v", message, err)
 		return fmt.Errorf("%s: %w", message, err)
 	}
-	return nil
-}
-
-// handleIssueCreated 处理JIRA问题创建事件
-func handleIssueCreated(payload interface{}) error {
-	pl, ok := payload.(pkg.IssueCreatedPayload)
-	if !ok {
-		return fmt.Errorf("invalid payload type for issue created: %T", payload)
-	}
-
-	if len(pl.ChangeLog.Items) == 0 {
-		return nil
-	}
-
-	for _, item := range pl.ChangeLog.Items {
-		if item.Field != "assignee" {
-			continue
-		}
-
-		fields := pl.Issue.Fields
-		assigneeNumber := getPhoneNumberWithFallback(fields.Assignee.DisplayName)
-		reporterNumber := getPhoneNumberWithFallback(fields.Reporter.DisplayName)
-
-		content := fmt.Sprintf(`
-### **事件通知: %s %s创建**
-- **摘要名称**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
-- **经办人**: → **%s**
-- **操作人**: %s
----
-@%s
-@%s
-`,
-			fields.Type.Name,
-			pl.Issue.Key,
-			fields.Summary,
-			pl.Issue.Key,
-			item.ToString,
-			pl.User.DisplayName,
-			assigneeNumber,
-			reporterNumber)
-
-		err := sendDingTalkNotification(content, buildAtMobiles(assigneeNumber, reporterNumber))
-		if err != nil {
-			return handleError(err, "发送创建通知失败")
-		}
-	}
-
-	return nil
-}
-
-// handleIssueDeleted 处理JIRA问题删除事件
-func handleIssueDeleted(payload interface{}) error {
-	pl, ok := payload.(pkg.IssueDeletedPayload)
-	if !ok {
-		return errors.New("invalid payload type for issue deleted")
-	}
-
-	fields := pl.Issue.Fields
-	assigneeNumber := getPhoneNumberWithFallback(fields.Assignee.DisplayName)
-	reporterNumber := getPhoneNumberWithFallback(fields.Reporter.DisplayName)
-
-	content := fmt.Sprintf(`
-### **事件通知: %s %s被删除**
-- **摘要名称**: ~~%s~~
-- **操作人**: %s
----
-@%s
-@%s
-`,
-		fields.Type.Name,
-		pl.Issue.Key,
-		fields.Summary,
-		pl.User.DisplayName,
-		assigneeNumber,
-		reporterNumber)
-
-	return handleError(
-		sendDingTalkNotification(content, buildAtMobiles(assigneeNumber, reporterNumber)),
-		"发送删除通知失败",
-	)
-}
-
-// handleIssueUpdated 处理JIRA问题更新事件
-func handleIssueUpdated(payload interface{}) error {
-	switch pl := payload.(type) {
-	case pkg.IssueUpdatedPayload:
-		return handleReporterUpdate(pl)
-	case pkg.IssueAssignedPayload:
-		return handleAssigneeUpdate(pl)
-	case pkg.IssueGenericPayload:
-		return handleStatusUpdate(pl)
-	default:
-		return fmt.Errorf("unknown payload type: %T", payload)
-	}
-}
-
-// handleReporterUpdate 处理报告人变更
-func handleReporterUpdate(pl pkg.IssueUpdatedPayload) error {
-	if len(pl.ChangeLog.Items) == 0 {
-		return nil
-	}
-
-	for _, item := range pl.ChangeLog.Items {
-		if item.Field != "reporter" {
-			continue
-		}
-
-		fields := pl.Issue.Fields
-		assigneeNumber := getPhoneNumberWithFallback(fields.Assignee.DisplayName)
-		reporterNumber := getPhoneNumberWithFallback(fields.Reporter.DisplayName)
-
-		content := fmt.Sprintf(`
-### **事件通知: %s 报告人变更**
-- **摘要名称**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
-- **状态**: %s
-- **报告人**: ~~%s~~ → **%s**
-- **操作人**: %s
----
-@%s
-@%s
-`,
-			pl.Issue.Key,
-			fields.Summary,
-			pl.Issue.Key,
-			fields.Status.Name,
-			item.FromString,
-			item.ToString,
-			pl.User.DisplayName,
-			assigneeNumber,
-			reporterNumber)
-
-		err := sendDingTalkNotification(content, buildAtMobiles(assigneeNumber, reporterNumber))
-		if err != nil {
-			return handleError(err, "发送报告人变更通知失败")
-		}
-	}
-
-	return nil
-}
-
-// handleAssigneeUpdate 处理经办人变更
-func handleAssigneeUpdate(pl pkg.IssueAssignedPayload) error {
-	if len(pl.ChangeLog.Items) == 0 {
-		return nil
-	}
-
-	for _, item := range pl.ChangeLog.Items {
-		if item.Field != "assignee" {
-			continue
-		}
-
-		fields := pl.Issue.Fields
-		assigneeNumber := getPhoneNumberWithFallback(fields.Assignee.DisplayName)
-		reporterNumber := getPhoneNumberWithFallback(fields.Reporter.DisplayName)
-
-		assigneeChange := fmt.Sprintf("→ **%s**", item.ToString)
-		if item.FromString != "" {
-			assigneeChange = fmt.Sprintf("~~%s~~ → **%s**", item.FromString, item.ToString)
-		}
-
-		content := fmt.Sprintf(`
-### **事件通知: %s 经办人变更**
-- **摘要名称**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
-- **状态**: %s
-- **经办人**: %s
-- **操作人**: %s
----
-@%s
-@%s
-`,
-			pl.Issue.Key,
-			fields.Summary,
-			pl.Issue.Key,
-			fields.Status.Name,
-			assigneeChange,
-			pl.User.DisplayName,
-			assigneeNumber,
-			reporterNumber)
-
-		err := sendDingTalkNotification(content, buildAtMobiles(assigneeNumber, reporterNumber))
-		if err != nil {
-			return handleError(err, "发送经办人变更通知失败")
-		}
-	}
-
-	return nil
-}
-
-// handleStatusUpdate 处理状态变更
-func handleStatusUpdate(pl pkg.IssueGenericPayload) error {
-	if len(pl.ChangeLog.Items) == 0 {
-		return nil
-	}
-
-	for _, item := range pl.ChangeLog.Items {
-		if item.Field != "status" {
-			continue
-		}
-
-		fields := pl.Issue.Fields
-		assigneeNumber := getPhoneNumberWithFallback(fields.Assignee.DisplayName)
-		reporterNumber := getPhoneNumberWithFallback(fields.Reporter.DisplayName)
-
-		content := fmt.Sprintf(`
-### **事件通知: %s 状态变更**
-- **摘要名称**: [%s](https://hzbxtx.atlassian.net/browse/%s?linkSource=email)
-- **状态**: ~~%s~~ → **%s**
-- **操作人**: %s
----
-@%s
-@%s
-`,
-			pl.Issue.Key,
-			fields.Summary,
-			pl.Issue.Key,
-			item.FromString,
-			item.ToString,
-			pl.User.DisplayName,
-
-			assigneeNumber,
-			reporterNumber)
-
-		err := sendDingTalkNotification(content, buildAtMobiles(assigneeNumber, reporterNumber))
-		if err != nil {
-			return handleError(err, "发送状态变更通知失败")
-		}
-	}
-
 	return nil
 }
