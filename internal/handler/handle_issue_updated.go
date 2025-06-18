@@ -2,8 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"time"
-	"whenchangesth/internal/objects"
 	"whenchangesth/pkg"
 )
 
@@ -130,7 +128,4 @@ func handleStatusUpdate(pl pkg.IssueGenericPayload) error {
 	}
 
 	return nil
-}
-func toStdTime(ts objects.Timestamp) time.Time {
-	return time.Time(ts)
 }
